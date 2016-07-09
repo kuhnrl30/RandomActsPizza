@@ -1,0 +1,401 @@
+---
+title: "Submission for Random Acts of Pizza Competition"
+output: 
+    html_document:
+        toc: yes
+comments: true
+layout: post
+date: 2016-02-15
+tags: Kaggle
+---  
+
+## The Challenge
+Kaggle launched a machine learning challenge based on the Random Acts of Pizza (RAOP) project on  [Reddit](http://www.reddit.com/r/Random_Acts_Of_Pizza/). The basic premise of ROAP is that people can buy a pizza for any random person that asks for it. People have made requests by describing hard times, asking very politely, or even offering to write poems in return.  
+
+The challenge was to predict whether a request would be successful and receive a free pizza.  
+
+## Exploratory Analytics and Feature Engineering
+
+#### Load the Training Data  
+You can get the training dataset from the Kaggle website, but in order to download it, Kaggle requires you to sign in to your account and accept the terms of the competition. Unfortunately, they haven't developed an API to do this with an R script so I'm going to rely on you to download the data yourself. Here is the link to the competition page: [Link](http://www.kaggle.com/c/random-acts-of-pizza/data). The data downloads as a 1.7MB zip file in JSON format. JSON is short for Java Script Object Notation and is an alternative to XML. 
+ 
+```{r Environment, results='hide', message=FALSE, warning=FALSE, echo=FALSE}
+# load all of the libraries used during the analysis up front
+library(rjson)      # read in the dataset
+library(plyr)       # data manipulation
+library(dplyr)      # data manipulation
+library(vcd)        # plotting
+library(lattice)    # plotting
+library(pROC)       # scoring the training model
+library(rpart)      # Create the modek
+library(rpart.plot) # plot classifier
+library(knitr)
+library(tm)
+library(caTools)    #Slit trainingset
+library(randomForest)
+#setwd(paste("C:/users/",Sys.getenv("USERNAME"),"/dropbox/RProjects/RAOP",sep=""))
+#setwd("c:/Users/owner/dropbox/kaggle challenges/RAOP")
+opts_chunk$set(cache=FALSE,fig.height=3,echo=FALSE,comment=NULL)
+```
+
+```{r LoadTrainData}
+# Read in the training dataset
+Train.raw<- fromJSON(file="../data/train.json",method='C')
+
+# Convert first and second level null list values to NA
+Train.raw<-lapply(Train.raw,lapply,function(x) ifelse(is.null(x),NA,x)) 
+
+Train.raw<-lapply(Train.raw,lapply,lapply,function(x) ifelse(is.null(x),NA,x))
+
+train<-as.data.frame(matrix(unlist(Train.raw),
+                            byrow=T,
+                            nrow=length(Train.raw)),
+                     stringsAsFactors=F)
+
+train<- tbl_df(train)
+
+# name the data frame columns using the names from the original list
+names(train)<-names(Train.raw[[1]])
+
+# remove the raw dataset to clear some memory
+rm(Train.raw)
+```
+
+```{r loadTestData}
+Test.raw<- fromJSON(file="../data/test.json", method='C')
+Test.raw<- lapply(Test.raw,lapply,function(x) ifelse(is.null(x),NA,x))
+Test.raw<- lapply(Test.raw,lapply,lapply,function(x) ifelse(is.null(x),NA,x))
+test <- data.frame(matrix(unlist(Test.raw),
+                             byrow=T,
+                             nrow=length(Test.raw)),
+                      stringsAsFactors=F)
+
+test<- tbl_df(test)
+names(test)<- names(Test.raw[[1]])
+test<-as.data.frame(lapply(test,function(x) gsub("N/A",NA,x)),stringsAsFactors=F)
+```
+
+#### Finding the Missing Values  
+With the dataset loaded, we'll start with some exploratory analysis to understand the dataset.
+We'll look at the attribute names and then make several plots determine which of the attributes might add predictive power. Let's take a quick look at the dataset and see where the missing values are. The missing values are in the variables below. 
+
+```{r navalues}
+# Convert all N/A to NA
+train<-as.data.frame(lapply(train,function(x) gsub("N/A",NA,x)),stringsAsFactors=F)
+
+NA.list<-ldply(lapply(train,function(x) sum(is.na(x))))
+NA.df  <-data.frame(matrix(unlist(NA.list),nrow=32,byrow=F),stringsAsFactors=F)
+NA.df %>%
+    filter(X2>0) %>%
+    mutate(Variable=X1,NACount=X2) %>%
+    select(Variable,NACount) %>%
+    format(justify="left") %>%
+    print(row.names=F)
+
+```
+
+It is interesting that Kaggle website describes the **requester_user_flair** field as used to say if the requester received pizza, received pizza and gave pizza, or didn't receive any pizza. This seems like it would give away the outcome of the request so we'll check to see if its in the test dataset. This field as well as a few others are only in the training dataset. There are only 17 fields in the test set while there are 32 fields in the training set. These fields will be removed to prevent us from building model on data points that won't be available later when we apply the model to the test dataset.  
+
+```{r removecolumns}
+#remove columns not in test set
+train<-train[,-c(2:4,6,7,11,13,15,17,19,21,26,28:29)]
+
+#rearrange so target value is the last column and idex values will match
+train<-train[,c(1:11,13:18,12)]
+```
+
+```{r columnclasses}
+train[,c(5:11,13:14)]<- apply(train[,c(5:11,13:14)],2,as.numeric)
+train$requester_received_pizza<-ifelse(train$requester_received_pizza=="TRUE",1,0)
+```
+
+### Analysis of Time Values  
+Next, we'll look at the success rates by time period to see if there are any trends with time.
+We'll need to convert the date fields to POSIXct so the year can be extracted and then we can create a chart of the success rates. Using the table below, we can see that the requests that receive pizza have consistently decreased across the years- both proportionally and nominally. The 2011 success rate is approximately 30 percent while the 2013 rate is a little more than 20 percent. This means that a request this year is less likely to be receive a free pizza then the year before. The difference in years could have predictive power so we'll keep it in mind for later.
+        
+```{r convertTime}
+# Convert date field to POSIXct format and create field for the year
+train$unix_timestamp_of_request_utc<-as.POSIXct(as.numeric(train$unix_timestamp_of_request_utc),
+                                               origin= "1970-01-01",
+                                               tz="UTC")
+train$Year<- factor(format(train$unix_timestamp_of_request_utc,format='%Y'))
+
+train %>%
+    group_by(Year) %>%
+    summarise(Count=length(Year),
+              Success= sum(requester_received_pizza==1)) %>%
+    mutate(Percent=paste(round(Success/Count,3)*100,"%", sep=""))
+```  
+
+#### Success Rate by Day of the Week  
+Based on the table above, it looks like requests were getting less successful with each year. 
+Perhaps as word got out about the program there were more requesters than pizza buyers or requests became disingenuous. We'd need to investigate the text to get those answers but for now we'll take a look at the data by day of the week. This will be a test to see if the requests are more successful on the weekend for example. This data doesn't appear to have very strong predictive power because the variance between days is not very great. 
+
+```{r weekdays}
+train$weekday<- factor(weekdays(train$unix_timestamp_of_request_utc))
+
+train %>%
+    group_by(weekday) %>%
+    summarise(Count=length(weekday),
+              Success=sum(requester_received_pizza==1)) %>%
+    mutate(Percent=paste(round(Success/Count,3)*100,"%",sep="")) 
+```
+
+
+We can put these three time related variables into our model later and let it decide which has more predictive power. 
+
+#### Converting Binary Variables   
+
+One of the fields is called giver_username_if_known. This variable is particulary interesting because, logically, in order for a giver to be known, they must first have given a pizza. We'll convert this variable to a binary value: 0 for an NA value and 1 for when the giver username exists. We can create a table showing the success rates by this binary value. The table shows us that whenerver there is a value in the giver_username_if_known variable and it is not an NA, then the request was successful. That makes sense and we expected that result. 
+
+```{r giverusername}
+train$giver_username_if_known<- ifelse(is.na(train$giver_username_if_known),0,1)
+
+train %>%
+    group_by(giver_username_if_known) %>%
+    summarise(Count=length(giver_username_if_known),
+              Success= sum(requester_received_pizza==1)) %>%
+    mutate(Percent=paste(round(Success/Count,3)*100,"%",sep=""))
+```
+
+#### Does Adding Images to the Request Help? 
+Next, we'll see look at the impact of attaching an image to the request. Per the research paper referenced in the competition website, attaching an image is supposed to increase the success rate. We'll see if this holds true in our training dataset. From the table below, it appears that this is correct but there are very few instances where an image was attached. This variable may not add much to our model.
+
+```{r image}
+train$Image<- ifelse(grepl("i.imgur",train$request_text),1,0)
+
+train %>%
+    group_by(Image) %>%
+    summarise(Count=length(Image),
+              Success= sum(requester_received_pizza==1)) %>%
+    mutate(percent=paste(round(Success/Count,3)*100,"%",sep=""))
+```
+
+#### Age of Reddit Account   
+The length of time the requester has had an account on Reddit may have an influence on whether the request is successful. This analysis will separate users that are not likely contributors to the community and less likely to receive a free pizza. The difference in the success rates seems to indicate this variable could have predictive power. Band new accounts are approximately 10% LESS successful than accounts open for more than a week.  
+
+```{r accountAge}
+train$Acct.Age<-ifelse(train$requester_account_age_in_days_at_request>7,1,0)
+
+train %>%
+    group_by(Acct.Age) %>%
+    summarise(Count=length(Acct.Age),
+              Success= sum(requester_received_pizza==1)) %>%
+    mutate(Percent=paste(round(Success/Count,3)*100,"%",sep=""))
+```
+
+Create a binary variable by the number of requester comments. The request is significantly more successful if the requester has more than 8 comments in the RAOP community. However, like the image variable, this may not add much predictive power from the small number of instances with more than 8 comments in the training set.
+
+```{r numComments}
+train$BnRAOP<-ifelse(train$requester_number_of_comments_in_raop_at_request>8,1,0)
+train %>%
+    group_by(BnRAOP) %>%
+    summarise(Count=length(BnRAOP),
+              Success= sum(requester_received_pizza==1)) %>%
+    mutate(Percent=paste(round(Success/Count,3)*100,"%",sep=""))
+```
+
+#### Text Analysis with Word Count  
+You can imagine that the text of the request is very important to whether the someone buys a pizza or not. It has to grab the readers attention, present a compelling case, or entertain. The text analysis starts with a simple analysis of the word count. Each request will be split and get the length, or count, of the number of words. We'll start by grouping the requests by percentiles and determining if the success rates have enough variance to give predictive power.
+
+```{r words}
+train$Words<- sapply(strsplit(train$request_text," ",fixed=T),length)
+
+train<- within(train, Word.bin<- as.integer(cut(Words,
+                                                      quantile(Words, probs=0:2/2), 
+                                                      include.lowest=T)))
+train %>%
+    group_by(Word.bin) %>%
+    summarise(Count=length(Word.bin),
+              Success= sum(requester_received_pizza==1)) %>%
+    mutate(Percent=paste(round(Success/Count,3)*100,"%",sep=""))
+```
+
+```{r split}
+split<-sample.split(train$requester_received_pizza,0.75)
+ttrain<-subset(train,split==TRUE)
+hold<- subset(train,split==FALSE)
+```
+
+We'll analyze the requests using term word frequency data. The text will be reprocessed by changing all characters to lower case, removing punctuation, removing stop words, and finally stemming the words. One processed, we'll look for words that are in at least 90% of the documents and use them to create a logistic regression model. 
+
+```{r trainTextAnalytics,results='hide',warning=FALSE, echo=FALSE}
+TrainCorpus<-Corpus(VectorSource(ttrain$request_text_edit_aware))
+TrainCorpus<-tm_map(TrainCorpus,content_transformer(tolower))
+TrainCorpus<-tm_map(TrainCorpus, PlainTextDocument)
+TrainCorpus<-tm_map(TrainCorpus,removePunctuation)
+TrainCorpus<-tm_map(TrainCorpus,removeWords, 
+                    c("pizza","anyon",stopwords("english")))
+TrainCorpus<-tm_map(TrainCorpus,stemDocument)
+TrainCorpus<-tm_map(TrainCorpus,removeWords,c("anyon","anyth","appreci","back"))
+dtmTrain<- DocumentTermMatrix(TrainCorpus)
+
+sparseTrain<-removeSparseTerms(dtmTrain,0.90)
+
+wordsTrain<-as.data.frame(as.matrix(sparseTrain), row.names=F)
+
+Targets<-colnames(wordsTrain)
+colnames(wordsTrain) = paste("A", colnames(wordsTrain),sep="")
+
+TextTrain<-data.frame(wordsTrain,
+                      requester_received_pizza=ttrain$requester_received_pizza, 
+                      row.names=NULL)
+
+LogMdl<-glm(requester_received_pizza~.,data=TextTrain,family=binomial)
+```
+
+```{r HoldoutTextAnalytics}
+holdCorpus<-Corpus(VectorSource(hold$request_text_edit_aware))
+holdCorpus<-tm_map(holdCorpus,content_transformer(tolower))
+holdCorpus<-tm_map(holdCorpus, PlainTextDocument)
+holdCorpus<-tm_map(holdCorpus,removePunctuation)
+holdCorpus<-tm_map(holdCorpus,stemDocument)
+holdCorpus<-tm_map(holdCorpus,removeWords, 
+                    c("pizza",stopwords("english")))
+dtmHold<- DocumentTermMatrix(holdCorpus)
+
+wordsHold<-as.data.frame(as.matrix(dtmHold[,colnames(dtmHold) %in% Targets]), row.names=F)
+
+colnames(wordsHold) = paste("A", colnames(wordsHold),sep="")
+TextHold<-data.frame(wordsHold,row.names=NULL)
+```
+
+## Create the Models
+#### Baseline Model  
+The baseline model is a simple average of how many requests were successful. In this simple model, we would use this average as the probability that each request was successful. We'd predict that every each observation had a 24.6 percent chance of success and therefore would most likely fail.
+
+```{r baseline}
+ttrain %>%
+    summarise(N=length(requester_received_pizza),
+              Success=sum(requester_received_pizza)) %>%
+    mutate(Percent=paste(round(Success/N,3)*100,"%",sep=""))
+```
+
+#### Logistic Regression Model   
+Linear regression models are useful for predicting continuous (numeric) variables. However, the target value in this challenge are binary and can only be values of 1 or 0. They either successfully receive a pizza or do not receive a pizza. Instead, logistic regression will be more useful because it will produce probability that the target value is 1. 
+
+````{r logisticRegression, results='hide'}
+train.glm<-glm(requester_received_pizza~ giver_username_if_known+BnRAOP+Word.bin+Year*weekday+Acct.Age,
+               family=binomial,
+               data=ttrain)
+```
+We see from the model summary below that the day of week and year variables don't appear to have a significant influence on the results. On top of that, the interactions between the variables are also not significant. Contrarily, we see that BnRAOP, Word.bin, and Acct.Age variables are all significant with 95% confidence. 
+
+```{r, echo=FALSE}
+summary(train.glm)
+```
+
+
+#### Classification Model  
+Classification and Regression (CART) models split the the dataset by variable to 
+
+```{r CART, warning=FALSE}
+CART<- rpart(requester_received_pizza~giver_username_if_known+Word.bin+Year+weekday+Words+Image+Acct.Age+BnRAOP, data=ttrain,
+           method="class",
+           na.action=na.rpart,
+           control=rpart.control(xval=10,cp=0.05,minbucket=10))
+
+CART<-prune(CART,cp=0.05)
+
+prp(CART, 
+    main= "RAOP Classification Tree",
+    extra=1,
+    box.col=c("pink","palegreen")[CART$frame$yval],
+    leaf.round=2)
+```
+
+#### Random Forest  
+Random forest is similar to the CART models except the algorithm makes many tree models out of samples of the data. The results are then aggregated to form a model of best fit. 
+
+```{r randomforest, warning=FALSE}
+RFTrain<- data.frame(cbind(ttrain[,c(1,19:25)], TextTrain), row.names=NULL)
+names(RFTrain)[1:8]<-names(ttrain[,c(1,19:25)])
+names(RFTrain)[9:53]<-names(TextTrain)
+
+Forest<- randomForest(factor(requester_received_pizza)~., 
+                      data=RFTrain,
+                      nodesize=5)
+```
+
+#### Score the Model  
+*Work in Progress*
+```{r RFHold, warning=FALSE}
+RFHold<- data.frame(cbind(hold[,c(1,19:25)], TextHold))
+names(RFHold)[1:8]<-names(hold[,c(1,19:25)])
+names(RFHold)[9:53]<-names(TextHold)
+```
+
+```{r predictTrain}
+glmpred<-predict.glm(train.glm,newdata=hold, type="response")
+Textpred<-predict(LogMdl,newdata=TextHold,type="response")
+CARTpred<- predict(CART,newdata=hold,type="prob")
+ForestPredTrain<-predict(Forest,newdata=RFHold,type="prob",metric="ROC")
+```
+
+```{r weightPredictions}
+Predictions<-data.frame(GLM=glmpred,Text=Textpred,CART=CARTpred[,2],Forest=ForestPredTrain[,2])
+weights<-c(.3,.2,.2,.3)
+Weighted<-rowSums(Predictions*weights)
+table(hold$requester_received_pizza, Weighted>0.5)
+
+score<-auc(as.numeric(hold$requester_received_pizza),Weighted)
+score
+```
+
+
+## Apply the Model to the Test Data
+*Work in Progress*
+The test set will be prepared using the same functions as were used on the training dataset. 
+
+```{r prepTest}
+test[,c(5:11,13:14)] <- apply(test[,c(5:11,13:14)], 2,as.numeric)
+test$giver_username_if_known<- ifelse(is.na(test$giver_username_if_known),0,1)
+test$unix_timestamp_of_request_utc<-as.POSIXct(as.numeric(test$unix_timestamp_of_request_utc),
+                                                origin= "1970-01-01",
+                                               tz="UTC")
+test$Year     <- factor(format(test$unix_timestamp_of_request_utc,format='%Y'))
+test$weekday  <- factor(weekdays(test$unix_timestamp_of_request_utc))
+test$Image    <- ifelse(grepl("i.imgur",test$request_text),1,0)
+test$Acct.Age <-ifelse(test$requester_account_age_in_days_at_request>7,1,0)
+test$BnRAOP   <- ifelse(test$requester_number_of_comments_in_raop_at_request>8,1,0)
+test$Words    <- sapply(strsplit(test$request_text," ",fixed=T),length)
+test$Word.bin <- ifelse(test$Words<29,1,0)
+```
+
+```{r testTextAnalytics, results='hide', warning=FALSE, echo=FALSE}
+TestCorpus<-Corpus(VectorSource(test$request_text_edit_aware))
+TestCorpus<-tm_map(TestCorpus,content_transformer(tolower))
+TestCorpus<-tm_map(TestCorpus, PlainTextDocument)
+TestCorpus<-tm_map(TestCorpus,removePunctuation)
+TestCorpus<-tm_map(TestCorpus,stemDocument)
+TestCorpus<-tm_map(TestCorpus,removeWords, 
+                    c("pizza",stopwords("english")))
+
+dtmTest<- DocumentTermMatrix(TestCorpus)
+
+wordsTest<-as.data.frame(as.matrix(dtmTest[,colnames(dtmTest) %in% Targets]), row.names=F)
+
+#wordsTest<-inspect(dtmTest[,colnames(dtmTest) %in% Targets])
+colnames(wordsTest) = paste("A", colnames(wordsTest),sep="")
+TextTest<-data.frame(wordsTest,row.names=NULL)
+
+RFTest <- data.frame(cbind(test [,c(1,18:24)], TextTest ))
+names(RFTest)[1:8]<-names(test[,c(1,18:24)])
+names(RFTest)[9:54]<-names(TextTest)
+```
+
+```{r predictTest}
+GLMLogPred <- predict.glm(train.glm,newdata=test, type="response")
+TextLogPred<- as.numeric(predict(LogMdl,newdata=TextTest,type="response"))
+CARTPred   <- predict(CART,newdata=test, type="prob")
+ForestPred<-predict(Forest,newdata=RFTest,type="prob",metric="ROC")
+```
+
+```{r submit}
+Predictions<- data.frame(GLM=GLMLogPred,Text=TextLogPred, CART=CARTPred[,2],Forest=ForestPred[,2])
+weightedPred<-Predictions*weights
+Temp<- rowSums(weightedPred,na.rm=T)
+Submit<- data.frame(request_id=test$request_id,
+                    requester_received_pizza=Temp)
+write.csv(Submit,"submit.csv",row.names=F)
+```
