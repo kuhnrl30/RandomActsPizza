@@ -1,0 +1,23 @@
+---
+title: "Build the Models"
+author: "Ryan Kuhn"
+date: '`r format(Sys.Date(),"%B %d, %Y")`'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{LabCorp Location Data Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r}
+# library(RandomActsofPizza)
+# library(pROC)       # scoring the training model
+# library(rpart)      # Create the model
+# library(rpart.plot) # plot classifier
+# library(caTools)    #Split trainingset
+# library(randomForest)
+```
+
+```{r}
+# LogMdl<-glm(requester_received_pizza~.,data=TextTrain,family=binomial)
+```

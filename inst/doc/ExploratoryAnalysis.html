@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<meta name="date" content="2016-07-24" />
+
+<title>Exploratory Analysis</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Exploratory Analysis</h1>
+<h4 class="date"><em>July 24, 2016</em></h4>
+
+
+
+<div id="the-challenge" class="section level2">
+<h2>The Challenge</h2>
+<p>Kaggle launched a machine learning challenge based on the Random Acts of Pizza (RAOP) project on <a href="http://www.reddit.com/r/Random_Acts_Of_Pizza/">Reddit</a>. The basic premise of ROAP is that people can buy a pizza for any random person that asks for it. People have made requests by describing hard times, asking very politely, or even offering to write poems in return. The challenge was to predict whether a request would be successful and receive a free pizza. Here is the link to the competition page: <a href="http://www.kaggle.com/c/random-acts-of-pizza/data">Link</a>.</p>
+</div>
+<div id="getting-started" class="section level2">
+<h2>Getting Started</h2>
+<div id="setup-the-environment" class="section level4">
+<h4>Setup the Environment</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RandomActsofPizza)
+<span class="kw">library</span>(rjson)      <span class="co"># read in the dataset</span>
+<span class="kw">library</span>(dplyr)      <span class="co"># data manipulation</span>
+<span class="kw">library</span>(ggplot2)    <span class="co"># plotting</span></code></pre></div>
+</div>
+<div id="load-the-training-data" class="section level4">
+<h4>Load the Training Data</h4>
+<p>You could get the data directly from the Kaggle website but they’ll require you to sign in and accept the terms of the competition. Unfortunately, they haven’t developed an API to do this programatically but you can get it from my Dropbox. The data downloads as a 1.7MB zip file in JSON format. JSON is short for Java Script Object Notation and is an alternative to XML.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainURL   &lt;-<span class="st"> &quot;https://www.dropbox.com/s/xkvj3mg6isy23hk/RandomActsofPizza-train.json?raw=1&quot;</span>
+Train.raw &lt;-<span class="st"> </span><span class="kw">fromJSON</span>(<span class="dt">file=</span>trainURL, <span class="dt">method=</span><span class="st">'C'</span>)
+train     &lt;-<span class="st"> </span><span class="kw">PrepareData</span>(Train.raw)
+
+testURL  &lt;-<span class="st"> &quot;https://www.dropbox.com/s/uu46twnfqdhgmvh/RandomActsofPizza-test.json?raw=1&quot;</span>
+Test.raw  &lt;-<span class="st"> </span><span class="kw">fromJSON</span>(<span class="dt">file=</span>testURL, <span class="dt">method=</span><span class="st">'C'</span>)
+test      &lt;-<span class="st"> </span><span class="kw">PrepareData</span>(Test.raw)</code></pre></div>
+<p>The Kaggle website describes the <strong>requester_user_flair</strong> field as used to say if the requester received pizza, received pizza and gave pizza, or didn’t receive any pizza. This seems like it would give away the outcome of the request so we’ll check to see if its in the test dataset. This field as well as a few others are only in the training dataset. There are only 17 fields in the test set while there are 32 fields in the training set. These fields will be removed to prevent us from building model on data points that won’t be available later when we apply the model to the test dataset.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#remove columns not in test set and put in the same order</span>
+train&lt;-<span class="st"> </span>train %&gt;%
+<span class="st">    </span><span class="kw">select</span>(<span class="kw">one_of</span>(<span class="kw">names</span>(test)), requester_received_pizza)
+
+<span class="co"># Convert all N/A to NA</span>
+train&lt;-<span class="kw">as.data.frame</span>(<span class="kw">lapply</span>(train,function(x) <span class="kw">gsub</span>(<span class="st">&quot;N/A&quot;</span>,<span class="ot">NA</span>,x)),<span class="dt">stringsAsFactors=</span>F)
+test &lt;-<span class="kw">as.data.frame</span>(<span class="kw">lapply</span>(test, function(x) <span class="kw">gsub</span>(<span class="st">&quot;N/A&quot;</span>,<span class="ot">NA</span>,x)),<span class="dt">stringsAsFactors=</span>F)
+
+<span class="co"># convert character columns to numeric</span>
+train[,<span class="kw">c</span>(<span class="dv">5</span>:<span class="dv">11</span>,<span class="dv">13</span>:<span class="dv">14</span>,<span class="dv">16</span>:<span class="dv">17</span>)]&lt;-<span class="kw">apply</span>(train[,<span class="kw">c</span>(<span class="dv">5</span>:<span class="dv">11</span>,<span class="dv">13</span>:<span class="dv">14</span>,<span class="dv">16</span>:<span class="dv">17</span>)], <span class="dv">2</span>,as.numeric)
+test[,<span class="kw">c</span>(<span class="dv">5</span>:<span class="dv">11</span>,<span class="dv">13</span>:<span class="dv">14</span>,<span class="dv">16</span>:<span class="dv">17</span>)] &lt;-<span class="kw">apply</span>(test[,<span class="kw">c</span>(<span class="dv">5</span>:<span class="dv">11</span>,<span class="dv">13</span>:<span class="dv">14</span>,<span class="dv">16</span>:<span class="dv">17</span>)], <span class="dv">2</span>,as.numeric)
+train$requester_received_pizza&lt;-<span class="kw">ifelse</span>(train$requester_received_pizza==<span class="st">&quot;TRUE&quot;</span>,<span class="dv">1</span>,<span class="dv">0</span>)</code></pre></div>
+</div>
+</div>
+<div id="exploratory-analytics-and-feature-engineering" class="section level2">
+<h2>Exploratory Analytics and Feature Engineering</h2>
+<div id="finding-the-missing-values" class="section level4">
+<h4>Finding the Missing Values</h4>
+<p>With the dataset loaded, we’ll start with some exploratory analysis to understand the dataset. We’ll look at the attribute names and then make several plots determine which of the attributes might add predictive power. Let’s take a quick look at the dataset and see where the missing values are.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">NA.counts&lt;-plyr::<span class="kw">ldply</span>(<span class="kw">lapply</span>(train,function(x) <span class="kw">sum</span>(<span class="kw">is.na</span>(x))))
+NA.counts %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(!V1==<span class="dv">0</span>) %&gt;%
+<span class="st">    </span><span class="kw">simpleprint</span>()</code></pre></div>
+<pre><code>        giver_username_if_known 3753
+requester_subreddits_at_request  729</code></pre>
+</div>
+<div id="analysis-of-time-values" class="section level3">
+<h3>Analysis of Time Values</h3>
+<p>Next, we’ll look at the success rates by different time periods to see if there are any trends with time. We’ll need to convert the date fields to POSIXct so the year can be extracted and then we can create a chart of the success rates. Using the table below, we can see that success rates have decreased across the years- both proportionally and nominally. The 2011 success rate is approximately 30 percent while the 2013 rate is a little more than 20 percent. This means that a request this year is less likely to be receive a free pizza then the year before. The difference in years could have predictive power so we’ll keep it in mind for later.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Convert date field to POSIXct format and create field for the year</span>
+
+train&lt;-<span class="st"> </span>train %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">unix_timestamp_of_request_utc=</span> <span class="kw">as.POSIXct</span>(unix_timestamp_of_request_utc, 
+                                                     <span class="dt">origin=</span> <span class="st">&quot;1970-01-01&quot;</span>, 
+                                                     <span class="dt">tz=</span><span class="st">&quot;UTC&quot;</span>),
+           <span class="dt">Year=</span> <span class="kw">factor</span>(<span class="kw">format</span>(unix_timestamp_of_request_utc,<span class="dt">format=</span><span class="st">'%Y'</span>)))
+
+test&lt;-<span class="st"> </span>test %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">unix_timestamp_of_request_utc=</span> <span class="kw">as.POSIXct</span>(unix_timestamp_of_request_utc, 
+                                                     <span class="dt">origin=</span> <span class="st">&quot;1970-01-01&quot;</span>, 
+                                                     <span class="dt">tz=</span><span class="st">&quot;UTC&quot;</span>),
+           <span class="dt">Year=</span> <span class="kw">factor</span>(<span class="kw">format</span>(unix_timestamp_of_request_utc,<span class="dt">format=</span><span class="st">'%Y'</span>)))
+
+train %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(Year) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">Count=</span><span class="kw">length</span>(Year),
+              <span class="dt">Success=</span> <span class="kw">sum</span>(requester_received_pizza)) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Percent=</span><span class="kw">paste</span>(<span class="kw">round</span>(Success/Count,<span class="dv">3</span>)*<span class="dv">100</span>,<span class="st">&quot;%&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;&quot;</span>))</code></pre></div>
+<pre><code># A tibble: 3 x 4
+    Year Count Success Percent
+  &lt;fctr&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;chr&gt;
+1   2011  1234     371   30.1%
+2   2012  1493     352   23.6%
+3   2013  1313     271   20.6%</code></pre>
+<div id="success-rate-by-day-of-the-week" class="section level4">
+<h4>Success Rate by Day of the Week</h4>
+<p>Based on the table above, it looks like requests were getting less successful with each year. Perhaps as word got out about the program there were more requesters than pizza buyers or requests became disingenuous. We’d need to investigate the text to get those answers but for now we’ll take a look at the data by day of the week. This will be a test to see if the requests are more successful on the weekend for example. This data doesn’t appear to have very strong predictive power because the variance between days is not very great.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train&lt;-<span class="st"> </span>train %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">weekday=</span> <span class="kw">factor</span>(<span class="kw">weekdays</span>(unix_timestamp_of_request_utc,F))) 
+
+test&lt;-<span class="st"> </span>test %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">weekday=</span> <span class="kw">factor</span>(<span class="kw">weekdays</span>(unix_timestamp_of_request_utc,F))) 
+
+train %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(weekday) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">Count=</span><span class="kw">length</span>(weekday),
+              <span class="dt">Success=</span><span class="kw">sum</span>(requester_received_pizza)) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Percent=</span><span class="kw">paste</span>(<span class="kw">round</span>(Success/Count,<span class="dv">3</span>)*<span class="dv">100</span>,<span class="st">&quot;%&quot;</span>,<span class="dt">sep=</span><span class="st">&quot;&quot;</span>)) </code></pre></div>
+<pre><code># A tibble: 7 x 4
+    weekday Count Success Percent
+     &lt;fctr&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;chr&gt;
+1    Friday   544     131   24.1%
+2    Monday   574     153   26.7%
+3  Saturday   522     121   23.2%
+4    Sunday   585     135   23.1%
+5  Thursday   550     164   29.8%
+6   Tuesday   606     134   22.1%
+7 Wednesday   659     156   23.7%</code></pre>
+<p>We can put these three time related variables into our model later and let it decide which has more predictive power.</p>
+</div>
+</div>
+<div id="converting-to-binary-variables" class="section level3">
+<h3>Converting to Binary Variables</h3>
+<p>One of the fields is called giver_username_if_known. This variable is particulary interesting because, logically, in order for a giver to be known, they must first have given a pizza. We’ll convert this variable to a binary value: 0 for an NA value and 1 for when the giver username exists. We can create a table showing the success rates by this binary value. The table shows us that whenerver there is a value in the giver_username_if_known variable and it is not an NA, then the request was successful. That makes sense and we expected that result.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train&lt;-<span class="st"> </span>train %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">giver_username_if_known=</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(giver_username_if_known),<span class="dv">0</span>,<span class="dv">1</span>))
+
+test&lt;-<span class="st"> </span>test %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">giver_username_if_known=</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(giver_username_if_known),<span class="dv">0</span>,<span class="dv">1</span>))
+
+train %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(giver_username_if_known) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">Count=</span><span class="kw">length</span>(giver_username_if_known),
+              <span class="dt">Success=</span> <span class="kw">sum</span>(requester_received_pizza)) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Percent=</span><span class="kw">paste</span>(<span class="kw">round</span>(Success/Count,<span class="dv">3</span>)*<span class="dv">100</span>,<span class="st">&quot;%&quot;</span>,<span class="dt">sep=</span><span class="st">&quot;&quot;</span>))</code></pre></div>
+<pre><code># A tibble: 2 x 4
+  giver_username_if_known Count Success Percent
+                    &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;chr&gt;
+1                       0  3753     707   18.8%
+2                       1   287     287    100%</code></pre>
+<div id="does-adding-images-to-the-request-help" class="section level4">
+<h4>Does Adding Images to the Request Help?</h4>
+<p>Next, we’ll see look at the impact of attaching an image to the request. Per the research paper referenced in the competition website, attaching an image is supposed to increase the success rate. We’ll see if this holds true in our training dataset. From the table below, it appears that this is correct but there are very few instances where an image was attached. This variable may not add much to our model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train&lt;-<span class="st"> </span>train %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Image =</span> <span class="kw">ifelse</span>(<span class="kw">grepl</span>(<span class="st">&quot;i.imgur&quot;</span>,train$request_text),<span class="dv">1</span>,<span class="dv">0</span>))
+
+test&lt;-<span class="st"> </span>test %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Image =</span> <span class="kw">ifelse</span>(<span class="kw">grepl</span>(<span class="st">&quot;i.imgur&quot;</span>,test$request_text),<span class="dv">1</span>,<span class="dv">0</span>))
+
+train %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(Image) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">Count=</span><span class="kw">length</span>(Image),
+              <span class="dt">Success=</span> <span class="kw">sum</span>(requester_received_pizza==<span class="dv">1</span>)) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">percent=</span><span class="kw">paste</span>(<span class="kw">round</span>(Success/Count,<span class="dv">3</span>)*<span class="dv">100</span>,<span class="st">&quot;%&quot;</span>,<span class="dt">sep=</span><span class="st">&quot;&quot;</span>))</code></pre></div>
+<pre><code># A tibble: 2 x 4
+  Image Count Success percent
+  &lt;dbl&gt; &lt;int&gt;   &lt;int&gt;   &lt;chr&gt;
+1     0  3948     954   24.2%
+2     1    92      40   43.5%</code></pre>
+</div>
+<div id="does-age-of-reddit-account-affect-the-outcome" class="section level4">
+<h4>Does Age of Reddit Account Affect the Outcome?</h4>
+<p>The age of the requester’s Reddit account may have an influence on whether the request is successful. This analysis will separate users that are not likely contributors to the community and less likely to receive a free pizza. The difference in the success rates seems to indicate this variable could have predictive power. Band new accounts are approximately 10% LESS successful than accounts open for more than a week.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p&lt;-<span class="st"> </span><span class="kw">ggplot</span>()
+p&lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span> <span class="dv">1</span>:<span class="dv">2000</span>,
+            <span class="dt">y=</span> <span class="kw">FindCutoff</span>(train$requester_received_pizza,
+                   train$requester_account_age_in_days_at_request, 
+                   <span class="dv">1</span>:<span class="dv">2000</span>))
+p&lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">geom_line</span>()
+p&lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">x=</span><span class="st">&quot;Cutoff level&quot;</span>,
+             <span class="dt">y=</span><span class="st">&quot;Success Rate&quot;</span>)
+p&lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">theme_minimal</span>()
+p</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train &lt;-<span class="st"> </span>train %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Acct.Age=</span><span class="kw">ifelse</span>(requester_account_age_in_days_at_request&gt;<span class="dv">500</span>,<span class="dv">1</span>,<span class="dv">0</span>))
+
+test &lt;-<span class="st"> </span>test %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Acct.Age=</span><span class="kw">ifelse</span>(requester_account_age_in_days_at_request&gt;<span class="dv">500</span>,<span class="dv">1</span>,<span class="dv">0</span>))</code></pre></div>
+</div>
+<div id="number-of-comments" class="section level4">
+<h4>Number of Comments</h4>
+<p>Requests may be more successful if the requester has more comments in the RAOP community. However, like the image variable, this may not add much predictive power.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p&lt;-<span class="st"> </span><span class="kw">ggplot</span>()
+p&lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span> <span class="dv">1</span>:<span class="dv">88</span>,
+            <span class="dt">y=</span> <span class="kw">FindCutoff</span>(train$requester_received_pizza,
+                          train$requester_number_of_comments_in_raop_at_request, 
+                          <span class="dv">1</span>:<span class="dv">88</span>))
+p&lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">geom_line</span>()
+p&lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">x=</span><span class="st">&quot;Cutoff level&quot;</span>,
+             <span class="dt">y=</span><span class="st">&quot;Success Rate&quot;</span>)
+p&lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">theme_minimal</span>()
+p</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train &lt;-<span class="st"> </span>train %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">BnRAOP =</span> <span class="kw">ifelse</span>(requester_number_of_comments_in_raop_at_request&gt;<span class="dv">9</span>,<span class="dv">1</span>,<span class="dv">0</span>))
+
+test &lt;-<span class="st"> </span>test %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">BnRAOP =</span> <span class="kw">ifelse</span>(requester_number_of_comments_in_raop_at_request&gt;<span class="dv">9</span>,<span class="dv">1</span>,<span class="dv">0</span>))</code></pre></div>
+</div>
+</div>
+<div id="text-analysis" class="section level3">
+<h3>Text Analysis</h3>
+<div id="calculating-a-basic-word-count" class="section level4">
+<h4>Calculating a Basic Word Count</h4>
+<p>You can imagine that the text of the request is very important to whether the someone buys a pizza or not. It has to grab the readers attention, present a compelling case, or entertain. The text analysis starts with a simple analysis of the word count. Each request will be split and get the length, or count, of the number of words. We’ll start by grouping the requests by percentiles and determining if the success rates have enough variance to give predictive power.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train$Words&lt;-<span class="st"> </span><span class="kw">sapply</span>(<span class="kw">strsplit</span>(train$request_text,<span class="st">&quot; &quot;</span>,<span class="dt">fixed=</span>T),length)
+test$Words&lt;-<span class="st"> </span><span class="kw">sapply</span>(<span class="kw">strsplit</span>(test$request_text,<span class="st">&quot; &quot;</span>,<span class="dt">fixed=</span>T),length)
+
+train&lt;-<span class="st"> </span><span class="kw">within</span>(train, Word.bin&lt;-<span class="st"> </span><span class="kw">as.integer</span>(<span class="kw">cut</span>(Words,<span class="kw">quantile</span>(Words, <span class="dt">probs=</span><span class="dv">0</span>:<span class="dv">2</span>/<span class="dv">2</span>), 
+                                                <span class="dt">include.lowest=</span>T)))
+test&lt;-<span class="st"> </span><span class="kw">within</span>(test, Word.bin&lt;-<span class="st"> </span><span class="kw">as.integer</span>(<span class="kw">cut</span>(Words, <span class="kw">quantile</span>(Words, <span class="dt">probs=</span><span class="dv">0</span>:<span class="dv">2</span>/<span class="dv">2</span>), 
+                                                <span class="dt">include.lowest=</span>T)))
+train %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(Word.bin) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">Count=</span><span class="kw">length</span>(Word.bin),
+              <span class="dt">Success=</span> <span class="kw">sum</span>(requester_received_pizza==<span class="dv">1</span>)) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Percent=</span><span class="kw">paste</span>(<span class="kw">round</span>(Success/Count,<span class="dv">3</span>)*<span class="dv">100</span>,<span class="st">&quot;%&quot;</span>,<span class="dt">sep=</span><span class="st">&quot;&quot;</span>))</code></pre></div>
+<pre><code># A tibble: 2 x 4
+  Word.bin Count Success Percent
+     &lt;int&gt; &lt;int&gt;   &lt;int&gt;   &lt;chr&gt;
+1        1  2046     407   19.9%
+2        2  1994     587   29.4%</code></pre>
+<p>We’ll analyze the requests using term word frequency data. The text will be reprocessed by changing all characters to lower case, removing punctuation, removing stop words, and finally stemming the words. Once processed, we’ll look for words that are in at least 90% of the documents.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">removewords&lt;-<span class="kw">c</span>(<span class="st">&quot;pizza&quot;</span>,<span class="st">&quot;anyon&quot;</span>,<span class="st">&quot;anyth&quot;</span>,<span class="st">&quot;appreci&quot;</span>,<span class="st">&quot;back&quot;</span>)
+dtmTrain&lt;-<span class="st"> </span><span class="kw">ProcessText</span>(train$request_text_edit_aware, <span class="dt">remove=</span>removewords)
+dtmTest&lt;-<span class="st"> </span><span class="kw">ProcessText</span>(test$request_text_edit_aware, <span class="dt">remove=</span>removewords)
+
+sparseTrain&lt;-<span class="kw">removeSparseTerms</span>(dtmTrain,<span class="fl">0.90</span>)
+
+TextTrain&lt;-<span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(sparseTrain), <span class="dt">row.names=</span>F)
+
+<span class="co"># TODO</span>
+<span class="co"># Match test column names with train names</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(TextTrain)</code></pre></div>
+<pre><code> [1] &quot;anyon&quot;   &quot;anyth&quot;   &quot;appreci&quot; &quot;broke&quot;   &quot;can&quot;     &quot;day&quot;     &quot;dont&quot;   
+ [8] &quot;eat&quot;     &quot;even&quot;    &quot;food&quot;    &quot;forward&quot; &quot;friend&quot;  &quot;get&quot;     &quot;give&quot;   
+[15] &quot;got&quot;     &quot;help&quot;    &quot;hungri&quot;  &quot;ill&quot;     &quot;ive&quot;     &quot;job&quot;     &quot;just&quot;   
+[22] &quot;know&quot;    &quot;last&quot;    &quot;like&quot;    &quot;live&quot;    &quot;love&quot;    &quot;make&quot;    &quot;money&quot;  
+[29] &quot;month&quot;   &quot;much&quot;    &quot;need&quot;    &quot;new&quot;     &quot;next&quot;    &quot;now&quot;     &quot;one&quot;    
+[36] &quot;paid&quot;    &quot;pay&quot;     &quot;realli&quot;  &quot;right&quot;   &quot;someon&quot;  &quot;thank&quot;   &quot;time&quot;   
+[43] &quot;today&quot;   &quot;tonight&quot; &quot;tri&quot;     &quot;want&quot;    &quot;week&quot;    &quot;will&quot;    &quot;work&quot;   </code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">barplot</span>(<span class="kw">colSums</span>(TextTrain))</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --> ## What’s Next This is the end of the exploratory analysis. We’ve looked at missing values, converted numeric values to binary, and worked with the text. The analysis continues with the next vignette.</p>
+<pre><code>vignette(&quot;ModelBuilding&quot;)</code></pre>
+</div>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
