@@ -6,6 +6,7 @@ library(RandomActsofPizza)
 library(rjson)      # read in the dataset
 library(dplyr)      # data manipulation
 library(ggplot2)    # plotting
+library(tm)
 
 ## ----loaddata------------------------------------------------------------
 trainURL   <- "https://www.dropbox.com/s/xkvj3mg6isy23hk/RandomActsofPizza-train.json?raw=1"
@@ -157,10 +158,10 @@ dtmTest<- ProcessText(test$request_text_edit_aware, remove=removewords)
 
 sparseTrain<-removeSparseTerms(dtmTrain,0.90)
 
-TextTrain<-as.data.frame(as.matrix(sparseTrain), row.names=F)
+TextTrain<- as.data.frame(as.matrix(sparseTrain), row.names=F)
 
-# TODO
-# Match test column names with train names
+TextTest <- as.data.frame(as.matrix(dtmTest), row.names=F)
+TextTest <- TextTest[,colnames(TextTest) %in% names(TextTrain)]
 
 ## ----plottraintext-------------------------------------------------------
 names(TextTrain)

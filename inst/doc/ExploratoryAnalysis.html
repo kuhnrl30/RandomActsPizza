@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2016-07-24" />
+<meta name="date" content="2016-07-25" />
 
 <title>Exploratory Analysis</title>
 
@@ -68,7 +68,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Exploratory Analysis</h1>
-<h4 class="date"><em>July 24, 2016</em></h4>
+<h4 class="date"><em>July 25, 2016</em></h4>
 
 
 
@@ -83,7 +83,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RandomActsofPizza)
 <span class="kw">library</span>(rjson)      <span class="co"># read in the dataset</span>
 <span class="kw">library</span>(dplyr)      <span class="co"># data manipulation</span>
-<span class="kw">library</span>(ggplot2)    <span class="co"># plotting</span></code></pre></div>
+<span class="kw">library</span>(ggplot2)    <span class="co"># plotting</span>
+<span class="kw">library</span>(tm)</code></pre></div>
+<pre><code>Loading required package: NLP</code></pre>
+<pre><code>
+Attaching package: 'NLP'</code></pre>
+<pre><code>The following object is masked from 'package:ggplot2':
+
+    annotate</code></pre>
 </div>
 <div id="load-the-training-data" class="section level4">
 <h4>Load the Training Data</h4>
@@ -286,10 +293,10 @@ dtmTest&lt;-<span class="st"> </span><span class="kw">ProcessText</span>(test$re
 
 sparseTrain&lt;-<span class="kw">removeSparseTerms</span>(dtmTrain,<span class="fl">0.90</span>)
 
-TextTrain&lt;-<span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(sparseTrain), <span class="dt">row.names=</span>F)
+TextTrain&lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(sparseTrain), <span class="dt">row.names=</span>F)
 
-<span class="co"># TODO</span>
-<span class="co"># Match test column names with train names</span></code></pre></div>
+TextTest &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(dtmTest), <span class="dt">row.names=</span>F)
+TextTest &lt;-<span class="st"> </span>TextTest[,<span class="kw">colnames</span>(TextTest) %in%<span class="st"> </span><span class="kw">names</span>(TextTrain)]</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(TextTrain)</code></pre></div>
 <pre><code> [1] &quot;anyon&quot;   &quot;anyth&quot;   &quot;appreci&quot; &quot;broke&quot;   &quot;can&quot;     &quot;day&quot;     &quot;dont&quot;   
  [8] &quot;eat&quot;     &quot;even&quot;    &quot;food&quot;    &quot;forward&quot; &quot;friend&quot;  &quot;get&quot;     &quot;give&quot;   
