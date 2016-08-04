@@ -13,7 +13,7 @@ vignette: >
 ---
 
 ```{r, echo=F}
-knitr::opts_chunk$set(cache=FALSE,fig.height=3,comment=NULL, eval=T, tiy=T)
+knitr::opts_chunk$set(cache=FALSE, fig.height=3, fig.width = 7, comment=NULL, eval=T, tidy=F, width=80)
 ```
 
 ## The Challenge
@@ -22,7 +22,7 @@ Kaggle launched a machine learning challenge based on the Random Acts of Pizza (
 ## Getting Started  
 
 #### Setup the Environment
-```{r environment}
+```{r environment, warning=F, message=F}
 library(RandomActsofPizza)
 library(rjson)      # read in the dataset
 library(dplyr)      # data manipulation
@@ -31,14 +31,14 @@ library(tm)
 ```
 
 #### Load the Training Data  
-You could get the data directly from the Kaggle website but they'll require you to sign in and accept the terms of the competition. Unfortunately, they haven't developed an API to do this programatically but you can get it from my Dropbox.  The data downloads as a 1.7MB zip file in JSON format. JSON is short for Java Script Object Notation and is an alternative to XML. 
+You could get the data directly from the Kaggle website but they'll require you to sign in and accept the terms of the competition. Unfortunately, they haven't developed an API to do this programatically but you can get it from my Dropbox.  The data downloads as a 1.7MB zip file in JSON format.  
 
 ```{r loaddata}
-trainURL   <- "https://www.dropbox.com/s/xkvj3mg6isy23hk/RandomActsofPizza-train.json?raw=1"
+trainURL  <- "https://www.dropbox.com/s/xkvj3mg6isy23hk/RandomActsofPizza-train.json?raw=1"
 Train.raw <- fromJSON(file=trainURL, method='C')
 train     <- PrepareData(Train.raw)
 
-testURL  <- "https://www.dropbox.com/s/uu46twnfqdhgmvh/RandomActsofPizza-test.json?raw=1"
+testURL   <- "https://www.dropbox.com/s/uu46twnfqdhgmvh/RandomActsofPizza-test.json?raw=1"
 Test.raw  <- fromJSON(file=testURL, method='C')
 test      <- PrepareData(Test.raw)
 ```
@@ -79,11 +79,10 @@ NA.counts %>%
 
 
 ### Analysis of Time Values  
-Next, we'll look at the success rates by different time periods to see if there are any trends with time. We'll need to convert the date fields to POSIXct so the year can be extracted and then we can create a chart of the success rates. Using the table below, we can see that success rates have decreased across the years- both proportionally and nominally. The 2011 success rate is approximately 30 percent while the 2013 rate is a little more than 20 percent. This means that a request this year is less likely to be receive a free pizza then the year before. The difference in years could have predictive power so we'll keep it in mind for later.
+Next, we'll look at the success rates by different time periods to see if there are any trends with time. We'll need to convert the date fields to POSIXct so the year can be extracted and then we can create a chart of the success rates. Using the table below, we can see that success rates have decreased across the years- both proportionally and nominally. The 2011 success rate is approximately 30 percent while the 2013 rate is a little more than 20 percent. This means that a request in 2013 is less likely to be receive a free pizza then the year before. The difference in years could have predictive power so we'll keep it in mind for later.
 
 ```{r convertTime}
 # Convert date field to POSIXct format and create field for the year
-
 train<- train %>% 
     mutate(unix_timestamp_of_request_utc= as.POSIXct(unix_timestamp_of_request_utc, 
                                                      origin= "1970-01-01", 
@@ -141,7 +140,7 @@ train %>%
     mutate(Percent=paste(round(Success/Count,3)*100,"%",sep=""))
 ```
 
-#### Does Adding Images to the Request Help? 
+#### Did it Help to Add Images to the Request? 
 Next, we'll see look at the impact of attaching an image to the request. Per the research paper referenced in the competition website, attaching an image is supposed to increase the success rate. We'll see if this holds true in our training dataset. From the table below, it appears that this is correct but there are very few instances where an image was attached. This variable may not add much to our model.
 
 ```{r image}
@@ -159,7 +158,7 @@ train %>%
 ```
 
 #### Does Age of Reddit Account Affect the Outcome?
-The age of the requester's Reddit account may have an influence on whether the request is successful. This analysis will separate users that are not likely contributors to the community and less likely to receive a free pizza. The difference in the success rates seems to indicate this variable could have predictive power. Band new accounts are approximately 10% LESS successful than accounts open for more than a week.  
+The age of the requester's Reddit account may have an influence on whether the request is successful. This analysis will separate users that are not likely contributors to the community and less likely to receive a free pizza. The difference in the success rates seems to indicate this variable could have predictive power. 
 
 ```{r accountAge}
 p<- ggplot()
@@ -209,11 +208,11 @@ You can imagine that the text of the request is very important to whether the so
 
 ```{r words}
 train$Words<- sapply(strsplit(train$request_text," ",fixed=T),length)
-test$Words<- sapply(strsplit(test$request_text," ",fixed=T),length)
+test$Words <- sapply(strsplit(test$request_text," ",fixed=T),length)
 
 train<- within(train, Word.bin<- as.integer(cut(Words,quantile(Words, probs=0:2/2), 
                                                 include.lowest=T)))
-test<- within(test, Word.bin<- as.integer(cut(Words, quantile(Words, probs=0:2/2), 
+test <- within(test, Word.bin<- as.integer(cut(Words, quantile(Words, probs=0:2/2), 
                                                 include.lowest=T)))
 train %>%
     group_by(Word.bin) %>%
@@ -227,7 +226,7 @@ We'll analyze the requests using term word frequency data. The text will be repr
 ```{r trainTextAnalytics,results='hide', warning=FALSE}
 removewords<-c("pizza","anyon","anyth","appreci","back")
 dtmTrain<- ProcessText(train$request_text_edit_aware, remove=removewords)
-dtmTest<- ProcessText(test$request_text_edit_aware, remove=removewords)
+dtmTest <- ProcessText(test$request_text_edit_aware, remove=removewords)
 
 sparseTrain<-removeSparseTerms(dtmTrain,0.90)
 
@@ -240,6 +239,22 @@ TextTest <- TextTest[,colnames(TextTest) %in% names(TextTrain)]
 ```{r plottraintext}
 names(TextTrain)
 barplot(colSums(TextTrain))
+``` 
+
+## Finalize the datasets
+Since we've done the transformations on the text fields like the username and time fields like the timestamp, we won't need them in the final train and test datasets. We'll keep them in another dataset *just in case*. I'll also trim some of the longer column names by reducing 'requester' to 'req'.  We'll prep the final train and test datasets by appending the text data.  
+```{r}
+names(train)<-gsub("requester","req",names(train))
+names(test) <-gsub("requester","req",names(test))
+
+justInCase<- as.data.frame(rbind(train[, c(2:4,16:17)],
+                                  test[, c(2:4,16:17)]))
+
+train <- as.data.frame(cbind(train[,-c(3:4,16:17)], TextTrain),
+                       stringsAsFactors=F)
+
+test <- as.data.frame(cbind(test[,c(3:4,16:17)],  TextTest),
+                      stringsAsFactors=F)
 ```
 ## What's Next
 This is the end of the exploratory analysis. We've looked at missing values, converted numeric values to binary, and worked with the text. The analysis continues with the next vignette. 

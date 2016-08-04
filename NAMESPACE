@@ -2,6 +2,7 @@
 
 export(FillNulls)
 export(FindCutoff)
+export(MergeModels)
 export(PrepareData)
 export(ProcessText)
 export(simpleprint)

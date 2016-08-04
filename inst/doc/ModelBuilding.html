@@ -12,9 +12,9 @@
 
 <meta name="author" content="Ryan Kuhn" />
 
-<meta name="date" content="2016-07-25" />
+<meta name="date" content="2016-08-04" />
 
-<title>Build the Models</title>
+<title>Model Building</title>
 
 
 
@@ -68,19 +68,121 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<h1 class="title toc-ignore">Build the Models</h1>
+<h1 class="title toc-ignore">Model Building</h1>
 <h4 class="author"><em>Ryan Kuhn</em></h4>
-<h4 class="date"><em>July 25, 2016</em></h4>
+<h4 class="date"><em>August 04, 2016</em></h4>
 
 
 
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># library(RandomActsofPizza)</span>
-<span class="co"># library(pROC)       # scoring the training model</span>
-<span class="co"># library(rpart)      # Create the model</span>
-<span class="co"># library(rpart.plot) # plot classifier</span>
-<span class="co"># library(caTools)    #Split trainingset</span>
-<span class="co"># library(randomForest)</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># LogMdl&lt;-glm(requester_received_pizza~.,data=TextTrain,family=binomial)</span></code></pre></div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This vignette covers to process to train the models and predict agains the test dataset. This is the continuation from the Exploratory Analysis already performed. The Exploratory Analysis vignette covers loading the raw data, converted to tabular format, and exploration to develop hypothesis. To see the Exploratory Analysis, read the vignette.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">&quot;ExploratoryAnalysis&quot;</span>)</code></pre></div>
+<div id="setup-the-environent" class="section level3">
+<h3>Setup the Environent</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RandomActsofPizza)
+<span class="kw">library</span>(dplyr)          <span class="co"># data manipulation</span>
+<span class="kw">library</span>(caret)          <span class="co"># model building</span>
+<span class="kw">library</span>(rpart.plot)     <span class="co"># plot CART classifier</span>
+<span class="kw">data</span>(train)
+<span class="kw">data</span>(test)</code></pre></div>
+</div>
+</div>
+<div id="naive-model" class="section level2">
+<h2>Naive Model</h2>
+<p>The naive model sets the baseline to which all other models are compared. It is the simple percentage of how many of the lines in the training dataset were successful. If the percentage is greater than 50% then we’d assume that all requests are successful. If less than 50%, then we’d assume none were successful. In this case, the success rate is only 24.5% so we’d assume that all requests for pizza would fail.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">N=</span><span class="kw">length</span>(req_received_pizza),
+              <span class="dt">Success=</span><span class="kw">sum</span>(req_received_pizza)) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Percent=</span><span class="kw">paste</span>(<span class="kw">round</span>(Success/N,<span class="dv">3</span>)*<span class="dv">100</span>,<span class="st">&quot;%&quot;</span>,<span class="dt">sep=</span><span class="st">&quot;&quot;</span>))</code></pre></div>
+</div>
+<div id="train-the-models" class="section level2">
+<h2>Train the Models</h2>
+<div id="setup-parallel-processing" class="section level3">
+<h3>Setup parallel processing</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(doParallel)
+cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="dv">3</span>)
+<span class="kw">registerDoParallel</span>(cl)</code></pre></div>
+<div id="logistic-regression-model" class="section level4">
+<h4>Logistic Regression Model</h4>
+<p>The target in this challenge is binary and the values can only be values of 1 or 0. The requester either successfully receives a pizza or does not receive a pizza. We will use logistic regression because it will produce probability that the target value is 1.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train &lt;-<span class="st"> </span>train %&gt;%
+<span class="st">    </span><span class="kw">select</span>(-request_id, -req_subreddits_at_request, -req_username) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">req_received_pizza=</span> <span class="kw">factor</span>(req_received_pizza, <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;N&quot;</span>,<span class="st">&quot;Y&quot;</span>)))
+
+glm_ctrl&lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method=</span><span class="st">&quot;repeatedCV&quot;</span>,
+                        <span class="dt">number=</span><span class="dv">10</span>,
+                        <span class="dt">repeats=</span><span class="dv">10</span>,
+                        <span class="dt">classProbs=</span><span class="ot">TRUE</span>,
+                        <span class="dt">summaryFunction =</span> twoClassSummary,
+                        <span class="dt">allowParallel =</span> <span class="ot">TRUE</span>)
+
+LogMdl &lt;-<span class="st"> </span><span class="kw">train</span>(<span class="dt">y=</span>train$req_received_pizza,
+                <span class="dt">x=</span><span class="kw">subset</span>(train, <span class="dt">select=</span>-req_received_pizza),
+                <span class="dt">method=</span><span class="st">&quot;glm&quot;</span>,
+                <span class="dt">metric=</span><span class="st">&quot;ROC&quot;</span>,
+                <span class="dt">trControl=</span>glm_ctrl,
+                <span class="dt">family=</span> <span class="st">&quot;binomial&quot;</span>) 
+
+
+<span class="kw">stopCluster</span>(cl)</code></pre></div>
+<p>We see from the model summary below that the day of week and year variables don’t appear to have a significant influence on the results. On top of that, the interactions between the variables are also not significant. Contrarily, we see that BnRAOP, Word.bin, and Acct.Age variables are all significant with 95% confidence.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(LogMdl)</code></pre></div>
+</div>
+<div id="classification-model" class="section level4">
+<h4>Classification Model</h4>
+<p>Classification and Regression (CART) models split the the dataset by variable to</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="dv">3</span>)
+<span class="kw">registerDoParallel</span>(cl)
+
+Cart_ctrl&lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method=</span><span class="st">&quot;cv&quot;</span>,
+                        <span class="dt">number=</span><span class="dv">10</span>,
+                        <span class="dt">classProbs=</span><span class="ot">TRUE</span>,
+                        <span class="dt">summaryFunction =</span> twoClassSummary,
+                        <span class="dt">allowParallel =</span> <span class="ot">TRUE</span>)
+
+CartMdl&lt;-<span class="st"> </span><span class="kw">train</span>(<span class="dt">y=</span>train$req_received_pizza,
+                <span class="dt">x=</span><span class="kw">subset</span>(train, <span class="dt">select=</span>-req_received_pizza),
+                <span class="dt">metric=</span><span class="st">&quot;ROC&quot;</span>,
+                <span class="dt">method=</span><span class="st">&quot;rpart&quot;</span>,
+                <span class="dt">trControl=</span> Cart_ctrl,
+                <span class="dt">cp=</span>.<span class="dv">05</span>)
+
+
+
+<span class="kw">stopCluster</span>(cl)
+
+
+<span class="kw">prp</span>(CartMdl$finalModel,
+    <span class="dt">main=</span> <span class="st">&quot;RAOP Classification Tree&quot;</span>,
+    <span class="dt">extra=</span><span class="dv">1</span>,
+    <span class="dt">box.col=</span><span class="kw">c</span>(<span class="st">&quot;pink&quot;</span>,<span class="st">&quot;palegreen&quot;</span>)[CartMdl$frame$yval],
+    <span class="dt">leaf.round=</span><span class="dv">2</span>)</code></pre></div>
+</div>
+<div id="score-the-models" class="section level4">
+<h4>Score the Models</h4>
+<p><em>Work in Progress</em> This</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LogScore&lt;-<span class="st"> </span><span class="kw">predict</span>(LogMdl, <span class="dt">data=</span>train, <span class="dt">type=</span><span class="st">&quot;prob&quot;</span>)
+<span class="kw">confusionMatrix</span>(LogScore[,<span class="dv">2</span>]&gt;.<span class="dv">5</span>, train$req_received_pizza==<span class="st">&quot;Y&quot;</span>, <span class="dt">positive=</span><span class="st">&quot;TRUE&quot;</span>)
+
+CartScore&lt;-<span class="st"> </span><span class="kw">predict</span>(CartMdl, <span class="dt">data=</span>train, <span class="dt">type=</span><span class="st">&quot;prob&quot;</span>)
+<span class="kw">confusionMatrix</span>(CartScore[,<span class="dv">2</span>]&gt;.<span class="dv">5</span>, train$req_received_pizza==<span class="st">&quot;Y&quot;</span>, <span class="dt">positive=</span><span class="st">&quot;TRUE&quot;</span>)
+
+MergedScore&lt;-<span class="st"> </span><span class="kw">MergeModels</span>(<span class="kw">cbind</span>(LogScore[,<span class="dv">2</span>],CartScore[,<span class="dv">2</span>]),<span class="kw">c</span>(.<span class="dv">7</span>,.<span class="dv">3</span>))
+<span class="kw">confusionMatrix</span>(MergedScore&gt;.<span class="dv">5</span>, train$req_received_pizza==<span class="st">&quot;Y&quot;</span>, <span class="dt">positive=</span><span class="st">&quot;TRUE&quot;</span>)</code></pre></div>
+</div>
+</div>
+</div>
+<div id="make-predictions-using-the-test-data" class="section level2">
+<h2>Make Predictions Using the Test Data</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LogPred  &lt;-<span class="st"> </span><span class="kw">predict</span>(LogMdl,<span class="dt">newdata=</span>test, <span class="dt">type=</span><span class="st">&quot;prob&quot;</span>)
+CARTPred &lt;-<span class="st"> </span><span class="kw">predict</span>(CartMdl, <span class="dt">newdata=</span>test, <span class="dt">type=</span><span class="st">&quot;prob&quot;</span>)
+Merged&lt;-<span class="kw">MergeModels</span>(<span class="kw">cbind</span>(LogPred[,<span class="dv">2</span>],CARTPred[,<span class="dv">2</span>]), <span class="kw">c</span>(.<span class="dv">6</span>,.<span class="dv">4</span>))
+
+
+Submit&lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">request_id=</span>test$request_id,
+                    <span class="dt">req_received_pizza=</span>Merged)</code></pre></div>
+</div>
 
 
 

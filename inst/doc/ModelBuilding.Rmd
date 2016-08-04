@@ -1,23 +1,143 @@
 ---
-title: "Build the Models"
+title: "Model Building"
 author: "Ryan Kuhn"
 date: '`r format(Sys.Date(),"%B %d, %Y")`'
 output: rmarkdown::html_vignette
+layout: post
+htmlwidgets: false
+comments: true
+tags: [R]
 vignette: >
-  %\VignetteIndexEntry{LabCorp Location Data Workflow}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+    %\VignetteIndexEntry{LabCorp Location Data Workflow}
+    %\VignetteEngine{knitr::rmarkdown}
+    \usepackage[utf8]{inputenc}
 ---
 
-```{r}
-# library(RandomActsofPizza)
-# library(pROC)       # scoring the training model
-# library(rpart)      # Create the model
-# library(rpart.plot) # plot classifier
-# library(caTools)    #Split trainingset
-# library(randomForest)
+```{r, echo=F}
+knitr::opts_chunk$set(cache=FALSE, fig.height=3, fig.width = 7, comment=NULL, eval=F, tiy=T, message = F, warning = F, width=80)
 ```
 
+## Introduction
+This vignette covers to process to train the models and predict agains the test dataset. This is the continuation from the Exploratory Analysis already performed. The Exploratory Analysis vignette covers loading the raw data, converted to tabular format, and exploration to develop hypothesis. To see the Exploratory Analysis, read the vignette.
+```{r, eval=F}
+vignette("ExploratoryAnalysis")
+```
+
+### Setup the Environent 
 ```{r}
-# LogMdl<-glm(requester_received_pizza~.,data=TextTrain,family=binomial)
+library(RandomActsofPizza)
+library(dplyr)          # data manipulation
+library(caret)          # model building
+library(rpart.plot)     # plot CART classifier
+data(train)
+data(test)
+```
+
+## Naive Model 
+The naive model sets the baseline to which all other models are compared. It is the simple percentage of how many of the lines in the training dataset were successful. If the percentage is greater than 50% then we'd assume that all requests are successful. If less than 50%, then we'd assume none were successful. In this case, the success rate is only 24.5% so we'd assume that all requests for pizza would fail. 
+```{r baseline}
+train %>%
+    summarise(N=length(req_received_pizza),
+              Success=sum(req_received_pizza)) %>%
+    mutate(Percent=paste(round(Success/N,3)*100,"%",sep=""))
+```
+
+## Train the Models  
+### Setup parallel processing 
+```{r}
+library(doParallel)
+cl <- makeCluster(3)
+registerDoParallel(cl)
+```
+
+#### Logistic Regression Model   
+The target in this challenge is binary and the values can only be values of 1 or 0. The requester either successfully receives a pizza or does not receive a pizza. We will use logistic regression because it will produce probability that the target value is 1. 
+
+````{r logisticRegression, results='hide'}
+train <- train %>%
+    select(-request_id, -req_subreddits_at_request, -req_username) %>%
+    mutate(req_received_pizza= factor(req_received_pizza, labels=c("N","Y")))
+
+glm_ctrl<- trainControl(method="repeatedCV",
+                        number=10,
+                        repeats=10,
+                        classProbs=TRUE,
+                        summaryFunction = twoClassSummary,
+                        allowParallel = TRUE)
+
+LogMdl <- train(y=train$req_received_pizza,
+                x=subset(train, select=-req_received_pizza),
+                method="glm",
+                metric="ROC",
+                trControl=glm_ctrl,
+                family= "binomial") 
+
+
+stopCluster(cl)
+```
+
+We see from the model summary below that the day of week and year variables don't appear to have a significant influence on the results. On top of that, the interactions between the variables are also not significant. Contrarily, we see that BnRAOP, Word.bin, and Acct.Age variables are all significant with 95% confidence. 
+
+```{r}
+summary(LogMdl)
+```
+
+#### Classification Model  
+Classification and Regression (CART) models split the the dataset by variable to 
+
+```{r CART, warning=FALSE}
+cl <- makeCluster(3)
+registerDoParallel(cl)
+
+Cart_ctrl<- trainControl(method="cv",
+                        number=10,
+                        classProbs=TRUE,
+                        summaryFunction = twoClassSummary,
+                        allowParallel = TRUE)
+
+CartMdl<- train(y=train$req_received_pizza,
+                x=subset(train, select=-req_received_pizza),
+                metric="ROC",
+                method="rpart",
+                trControl= Cart_ctrl,
+                cp=.05)
+
+
+
+stopCluster(cl)
+
+
+prp(CartMdl$finalModel,
+    main= "RAOP Classification Tree",
+    extra=1,
+    box.col=c("pink","palegreen")[CartMdl$frame$yval],
+    leaf.round=2)
+
+```
+
+
+#### Score the Models  
+*Work in Progress*
+This 
+```{r}
+LogScore<- predict(LogMdl, data=train, type="prob")
+confusionMatrix(LogScore[,2]>.5, train$req_received_pizza=="Y", positive="TRUE")
+
+CartScore<- predict(CartMdl, data=train, type="prob")
+confusionMatrix(CartScore[,2]>.5, train$req_received_pizza=="Y", positive="TRUE")
+
+MergedScore<- MergeModels(cbind(LogScore[,2],CartScore[,2]),c(.7,.3))
+confusionMatrix(MergedScore>.5, train$req_received_pizza=="Y", positive="TRUE")
+```
+
+## Make Predictions Using the Test Data
+
+```{r predictTest}
+LogPred  <- predict(LogMdl,newdata=test, type="prob")
+CARTPred <- predict(CartMdl, newdata=test, type="prob")
+Merged<-MergeModels(cbind(LogPred[,2],CARTPred[,2]), c(.6,.4))
+
+
+Submit<- data.frame(request_id=test$request_id,
+                    req_received_pizza=Merged)
 ```

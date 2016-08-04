@@ -15,8 +15,6 @@
 #' @param x character for preprocessing
 #' @param remove a vector of additional words to remove
 #' @return Document term matrix
-#' @import tm
-#' @import SnowballC
 #' @export
 #'
 ProcessText<- function(x,remove=NULL){
