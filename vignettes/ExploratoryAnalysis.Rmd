@@ -244,16 +244,19 @@ barplot(colSums(TextTrain))
 ## Finalize the datasets
 Since we've done the transformations on the text fields like the username and time fields like the timestamp, we won't need them in the final train and test datasets. We'll keep them in another dataset *just in case*. I'll also trim some of the longer column names by reducing 'requester' to 'req'.  We'll prep the final train and test datasets by appending the text data.  
 ```{r}
-names(train)<-gsub("requester","req",names(train))
-names(test) <-gsub("requester","req",names(test))
+names(train)<-gsub("requester_","",names(train))
+names(train)<-gsub("_at_request","",names(train))
 
-justInCase<- as.data.frame(rbind(train[, c(2:4,16:17)],
-                                  test[, c(2:4,16:17)]))
+names(test) <-gsub("requester_","",names(test))
+names(test) <-gsub("_at_request","",names(test))
 
-train <- as.data.frame(cbind(train[,-c(3:4,16:17)], TextTrain),
+justInCase<- as.data.frame(rbind(train[, c(2:4,12,15:17)],
+                                  test[, c(2:4,12,15:17)]))
+
+train <- as.data.frame(cbind(train[,-c(2:4,12,15:17)], TextTrain),
                        stringsAsFactors=F)
 
-test <- as.data.frame(cbind(test[,c(3:4,16:17)],  TextTest),
+test <- as.data.frame(cbind(test[,-c(3:4,12,15:17)],  TextTest),
                       stringsAsFactors=F)
 ```
 ## What's Next
