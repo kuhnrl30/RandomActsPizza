@@ -1,6 +1,6 @@
 Package: RandomActsofPizza
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Document the analysis to compete in Kaggle's Random Acts of Pizza competition
 Version: 0.1.0
 Author: Ryan Kuhn
 Maintainer: Ryan Kun <kuhnrl30@gmail.com>
