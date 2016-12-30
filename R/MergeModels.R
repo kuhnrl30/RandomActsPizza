@@ -6,8 +6,8 @@
 #' @param weights vector of weights to apply to the dataframe
 #' @return single prediction for each observation
 #' @export
-#' @usage
-#' Preds< cbind(1:5,6:10)
+#' @examples
+#' Preds<- cbind(1:5,6:10)
 #' MergeModels(Preds, c(.4,.6)) # different weights
 #' MergeModels(Preds) # Equal weights
 #'

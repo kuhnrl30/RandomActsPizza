@@ -6,4 +6,5 @@ This package documents the analysis for Kaggle's Random Acts of Pizza competitio
 devtools::install_github("kuhnrl30/RandomActsofPizza")
 library(RandomActsofPizza)
 vignette("ExploratoryAnalysis")
+vignette("ModelBuiling")
 ```

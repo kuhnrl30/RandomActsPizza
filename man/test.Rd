@@ -4,20 +4,20 @@
 \name{test}
 \alias{test}
 \title{Test dataset}
-\format{dataframe with 1631 rows and 24 variables.
+\format{dataframe with 4040 rows.  There are 17 primary
+variables plus additional variables to cound the number of
+times a word occurs in a request.
 \itemize{
 \item giver_username_if_known
 \item request_id
-\item requester_account_age_in_days_at_request
-\item requester_days_since_first_post_on_raop_at_request
-\item requester_number_of_comments_at_request
-\item requester_number_of_comments_in_raop_at_request
-\item requester_number_of_posts_at_request
-\item requester_number_of_posts_on_raop_at_request
-\item requester_number_of_subreddits_at_request
-\item requester_subreddits_at_request
-\item requester_upvotes_plus_downvotes_at_request
-\item requester_username
+\item account_age_in_days
+\item days_since_first_post_on_raop
+\item number_of_comments
+\item number_of_comments_in_raop
+\item number_of_posts
+\item number_of_posts_on_raop
+\item number_of_subreddits
+\item upvotes_plus_downvotes
 \item Year
 \item weekday
 \item Image
@@ -28,7 +28,7 @@
 }}
 \description{
 This dataset is the product of Exploratory Analysis where
-he raw training dataset was downloaded and processed. Call
+the raw training dataset was downloaded and processed. Call
 \code{vignette("ExploratoryAnalysis")} to see the documentation.
 }
 

@@ -8,7 +8,7 @@ htmlwidgets: false
 comments: true
 tags: [R]
 vignette: >
-    %\VignetteIndexEntry{LabCorp Location Data Workflow}
+    %\VignetteIndexEntry{Buiding the Model}
     %\VignetteEngine{knitr::rmarkdown}
     \usepackage[utf8]{inputenc}
 ---

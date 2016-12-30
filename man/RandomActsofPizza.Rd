@@ -5,15 +5,16 @@
 \alias{RandomActsofPizza}
 \alias{RandomActsofPizza-package}
 \title{Random Acts of Pizza.}
-\usage{
-vignette("ExploratoryAnalysis")
-vignette("ModelBuilding")
-}
 \description{
 To document the process used to compete in Kaggle's Random Acts of Pizza
 competition. The raw data is downloaded from Dropbox and the analysis can be
 seen though vignettes. The process uses a mix of time and text analyses.
 Read the vingettes to follow the workflow.
+}
+\examples{
+vignette("ExploratoryAnalysis")
+vignette("ModelBuilding")
+
 }
 \author{
 Ryan Kuhn, CPA

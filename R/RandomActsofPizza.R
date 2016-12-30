@@ -32,7 +32,7 @@ NULL
 #' Test dataset
 #'
 #' This dataset is the product of Exploratory Analysis where
-#' he raw training dataset was downloaded and processed. Call
+#' the raw training dataset was downloaded and processed. Call
 #' \code{vignette("ExploratoryAnalysis")} to see the documentation.
 #' @docType data
 #' @name test
@@ -71,9 +71,19 @@ NULL
 #' @docType package
 #' @author Ryan Kuhn, CPA
 #' @import tm
-#' @import SnowballC
-#' @usage
+#' @import utils
+#' @importFrom methods "hasArg"
+#' @examples
 #' vignette("ExploratoryAnalysis")
 #' vignette("ModelBuilding")
 #'
+NULL
+
+#' Extraneous data points
+#'
+#' This dataset is the product of Exploratory Analysis where
+#' the raw training dataset was downloaded and processed. Call
+#' \code{vignette("ExploratoryAnalysis")} to see the documentation.
+#' @docType data
+#' @name justInCase
 NULL

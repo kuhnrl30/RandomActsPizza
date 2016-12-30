@@ -4,9 +4,7 @@
 \alias{MergeModels}
 \title{To merge the models into singe predictions}
 \usage{
-Preds< cbind(1:5,6:10)
-MergeModels(Preds, c(.4,.6)) # different weights
-MergeModels(Preds) # Equal weights
+MergeModels(x, weights = NULL)
 }
 \arguments{
 \item{x}{matrix or dataframe of predictions from singe models}
@@ -18,5 +16,11 @@ single prediction for each observation
 }
 \description{
 Takes a weighted average of the prediction scores to create and ensembled model.
+}
+\examples{
+Preds<- cbind(1:5,6:10)
+MergeModels(Preds, c(.4,.6)) # different weights
+MergeModels(Preds) # Equal weights
+
 }
 

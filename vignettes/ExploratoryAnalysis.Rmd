@@ -7,7 +7,7 @@ htmlwidgets: false
 comments: true
 tags: [R]
 vignette: >
-    %\VignetteIndexEntry{LabCorp Location Data Workflow}
+    %\VignetteIndexEntry{Exploratory Analysis}
     %\VignetteEngine{knitr::rmarkdown}
     \usepackage[utf8]{inputenc}
 ---
@@ -25,8 +25,10 @@ Kaggle launched a machine learning challenge based on the Random Acts of Pizza (
 ```{r environment, warning=F, message=F}
 library(RandomActsofPizza)
 library(rjson)      # read in the dataset
+library(plyr)
 library(dplyr)      # data manipulation
 library(ggplot2)    # plotting
+library(httr)
 library(tm)
 ```
 
@@ -34,12 +36,12 @@ library(tm)
 You could get the data directly from the Kaggle website but they'll require you to sign in and accept the terms of the competition. Unfortunately, they haven't developed an API to do this programatically but you can get it from my Dropbox.  The data downloads as a 1.7MB zip file in JSON format.  
 
 ```{r loaddata}
-trainURL  <- "https://www.dropbox.com/s/xkvj3mg6isy23hk/RandomActsofPizza-train.json?raw=1"
-Train.raw <- fromJSON(file=trainURL, method='C')
+trainURL  <- "https://onedrive.live.com/download?cid=CE1B639CAE3DDA03&resid=CE1B639CAE3DDA03%2128205&authkey=AMx1Yp1M2GIga6o"
+Train.raw<- content(GET(trainURL), as="parsed")
 train     <- PrepareData(Train.raw)
 
-testURL   <- "https://www.dropbox.com/s/uu46twnfqdhgmvh/RandomActsofPizza-test.json?raw=1"
-Test.raw  <- fromJSON(file=testURL, method='C')
+testURL   <- "https://onedrive.live.com/download?cid=CE1B639CAE3DDA03&resid=CE1B639CAE3DDA03%2128034&authkey=AJSyWkddIKdJaCg"
+Test.raw  <- content(GET(testURL), as= "parsed")
 test      <- PrepareData(Test.raw)
 ```
 
