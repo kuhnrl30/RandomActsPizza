@@ -1,15 +1,14 @@
 ---
 title: "Exploratory Analysis"
 date: '`r format(Sys.Date(),"%B %d, %Y")`'
-output: rmarkdown::html_vignette
-layout: post
-htmlwidgets: false
-comments: true
-tags: [R]
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
 vignette: >
     %\VignetteIndexEntry{Exploratory Analysis}
     %\VignetteEngine{knitr::rmarkdown}
-    \usepackage[utf8]{inputenc}
+    %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, echo=F}
@@ -37,11 +36,11 @@ You could get the data directly from the Kaggle website but they'll require you 
 
 ```{r loaddata}
 trainURL  <- "https://onedrive.live.com/download?cid=CE1B639CAE3DDA03&resid=CE1B639CAE3DDA03%2128205&authkey=AMx1Yp1M2GIga6o"
-Train.raw<- content(GET(trainURL), as="parsed")
+Train.raw <- httr::content(GET(trainURL),"parsed")
 train     <- PrepareData(Train.raw)
 
 testURL   <- "https://onedrive.live.com/download?cid=CE1B639CAE3DDA03&resid=CE1B639CAE3DDA03%2128034&authkey=AJSyWkddIKdJaCg"
-Test.raw  <- content(GET(testURL), as= "parsed")
+Test.raw  <- httr::content(GET(testURL),"parsed")
 test      <- PrepareData(Test.raw)
 ```
 

@@ -19,4 +19,3 @@ vignette("ModelBuilding")
 \author{
 Ryan Kuhn, CPA
 }
-

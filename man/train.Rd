@@ -31,4 +31,3 @@ This dataset is the product of Exploratory Analysis where
 he raw training dataset was downloaded and processed. Call
 \code{vignette("ExploratoryAnalysis")} to see the documentation.
 }
-

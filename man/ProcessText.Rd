@@ -27,4 +27,3 @@ preprocessing follows these steps:
 \item Convert to document term matrix
 }
 }
-

@@ -21,4 +21,3 @@ Find the cutoff point when converting a numeric vector to binary. The
 function calculates the share of a instances in a class given a
 cutoff point.
 }
-

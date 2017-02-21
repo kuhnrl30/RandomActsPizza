@@ -2,15 +2,14 @@
 title: "Model Building"
 author: "Ryan Kuhn"
 date: '`r format(Sys.Date(),"%B %d, %Y")`'
-output: rmarkdown::html_vignette
-layout: post
-htmlwidgets: false
-comments: true
-tags: [R]
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
 vignette: >
     %\VignetteIndexEntry{Buiding the Model}
     %\VignetteEngine{knitr::rmarkdown}
-    \usepackage[utf8]{inputenc}
+    %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setoptions, echo=F}
@@ -46,7 +45,7 @@ train %>%
 ### Setup parallel processing 
 ```{r}
 library(doParallel)
-cl <- makeCluster(3)
+cl <- makeCluster(2)
 registerDoParallel(cl)
 ```
 
@@ -86,7 +85,7 @@ summary(LogMdl)
 Classification and Regression (CART) models split the the dataset by variable to minimize the variance in each split. In the plot below, you see that the right fork has no failed requests and only 287 successful requests. 
 
 ```{r traincart, warning=FALSE}
-cl <- makeCluster(3)
+cl <- makeCluster(2)
 registerDoParallel(cl)
 
 Cart_ctrl<- trainControl(method="cv",

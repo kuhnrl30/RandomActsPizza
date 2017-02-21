@@ -23,4 +23,3 @@ MergeModels(Preds, c(.4,.6)) # different weights
 MergeModels(Preds) # Equal weights
 
 }
-

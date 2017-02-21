@@ -15,4 +15,3 @@ dataframe
 \description{
 Prepare a tabular dataset from json
 }
-

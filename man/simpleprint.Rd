@@ -12,4 +12,3 @@ simpleprint(df)
 \description{
 Prints the contents of a dataframe without column or row names
 }
-

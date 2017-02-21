@@ -9,8 +9,9 @@ Description: This package documents the analysis performed to compete in
 	within the vignettes.
 License: MIT + file LICENSE
 LazyData: TRUE
-RoxygenNote: 5.0.1
-Suggests: knitr
+RoxygenNote: 6.0.1
+Suggests: knitr,
+	rmarkdown
 VignetteBuilder: knitr
 Imports:
 	tm,
