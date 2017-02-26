@@ -5,7 +5,7 @@ r_packages:
 	plyr,
 	rpart,
 	rpart.plot,
-	ggplot,
+	ggplot2,
 	doParallel,
 	caret,
 	httr
