@@ -12,4 +12,5 @@ r_packages:
   - httr
   - dplyr
   - SnowballC
+  - e1071
   
