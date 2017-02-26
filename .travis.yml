@@ -1,11 +1,11 @@
 language: R
 cache: packages
 r_packages: 
-	prettydoc,
-	plyr,
-	rpart,
-	rpart.plot,
-	ggplot2,
-	doParallel,
-	caret,
-	httr
+	- prettydoc,
+	- plyr,
+	- rpart,
+	- rpart.plot,
+	- ggplot2,
+	- doParallel,
+	- caret,
+	- httr
