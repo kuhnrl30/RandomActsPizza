@@ -11,4 +11,5 @@ r_packages:
   - caret
   - httr
   - dplyr
+  - SnowballC
   
