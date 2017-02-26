@@ -1,3 +1,11 @@
 language: R
 cache: packages
-r_packages: prettydoc
+r_packages: 
+	prettydoc,
+	plyr,
+	rpart,
+	rpart.plot,
+	ggplot,
+	doParallel,
+	caret,
+	httr
