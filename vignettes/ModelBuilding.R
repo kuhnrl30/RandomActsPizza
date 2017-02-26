@@ -20,7 +20,7 @@ train %>%
 
 ## ------------------------------------------------------------------------
 library(doParallel)
-cl <- makeCluster(3)
+cl <- makeCluster(2)
 registerDoParallel(cl)
 
 ## ----trainlogmodel, results='hide'---------------------------------------
@@ -48,7 +48,7 @@ stopCluster(cl)
 summary(LogMdl)
 
 ## ----traincart, warning=FALSE--------------------------------------------
-cl <- makeCluster(3)
+cl <- makeCluster(2)
 registerDoParallel(cl)
 
 Cart_ctrl<- trainControl(method="cv",
