@@ -1,4 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^\Extraneous\*
-^\docs\*
+^docs/*
+^\.travis\.yml
+_config\.yml

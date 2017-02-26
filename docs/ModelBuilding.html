@@ -12,7 +12,7 @@
 
 <meta name="author" content="Ryan Kuhn" />
 
-<meta name="date" content="2017-02-21" />
+<meta name="date" content="2017-02-25" />
 
 <title>Model Building</title>
 
@@ -74,7 +74,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="cover-card table-cell table-middle">
 <span class="author_name">Model Building</span>
 <span class="author_bio mbm">Ryan Kuhn</span>
-<span class="author_bio mbm">February 21, 2017</span>
+<span class="author_bio mbm">February 25, 2017</span>
 </div>
 </div>
 </div>
@@ -114,7 +114,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="setup-parallel-processing" class="section level3">
 <h3>Setup parallel processing</h3>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(doParallel)
-cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="dv">3</span>)
+cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="dv">2</span>)
 <span class="kw">registerDoParallel</span>(cl)</code></pre></div>
 <div id="logistic-regression-model" class="section level4">
 <h4>Logistic Regression Model</h4>
@@ -237,7 +237,7 @@ Number of Fisher Scoring iterations: 16</code></pre>
 <div id="classification-model" class="section level4">
 <h4>Classification Model</h4>
 <p>Classification and Regression (CART) models split the the dataset by variable to minimize the variance in each split. In the plot below, you see that the right fork has no failed requests and only 287 successful requests.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="dv">3</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="dv">2</span>)
 <span class="kw">registerDoParallel</span>(cl)
 
 Cart_ctrl&lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method=</span><span class="st">&quot;cv&quot;</span>,

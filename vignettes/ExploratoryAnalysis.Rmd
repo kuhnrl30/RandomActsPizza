@@ -23,7 +23,6 @@ Kaggle launched a machine learning challenge based on the Random Acts of Pizza (
 #### Setup the Environment
 ```{r environment, warning=F, message=F}
 library(RandomActsofPizza)
-library(rjson)      # read in the dataset
 library(plyr)
 library(dplyr)      # data manipulation
 library(ggplot2)    # plotting
