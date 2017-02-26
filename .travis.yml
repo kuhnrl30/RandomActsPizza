@@ -10,3 +10,5 @@ r_packages:
   - doParallel
   - caret
   - httr
+  - dplyr
+  
