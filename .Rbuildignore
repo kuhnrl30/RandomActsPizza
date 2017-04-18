@@ -3,3 +3,5 @@
 ^docs/*
 ^\.travis\.yml
 _config\.yml
+_pkgdown\.yml
+index\.Rmd
